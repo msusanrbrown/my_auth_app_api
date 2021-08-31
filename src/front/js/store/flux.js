@@ -2,18 +2,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
 			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+			authToken: null,
+			authError: null
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -41,9 +31,45 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				//reset the global store
 				setStore({ demo: demo });
+			},
+			logout: () => {
+				setStore({ authToken: null });
+			},
+			loginUser: (email, password) => {
+				fetch(process.env.BACKEND_URL + "/api/login", {
+					method: "POST",
+					body: JSON.stringify({ email, password }),
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+					.then(resp => {
+						if (resp.status !== 200) {
+							throw new Error(resp.data);
+						}
+						return resp.json();
+					})
+
+					.then(data => setStore({ authToken: data.token, authError: null }))
+					.catch(error => setStore({ authToken: null, authError: error }));
+			},
+			registerUser: (email, password) => {
+				fetch(process.env.BACKEND_URL + "/api/register", {
+					method: "POST",
+					body: JSON.stringify({ email, password }),
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+					.then(resp => {
+						if (resp.status !== 204) {
+							throw new Error("registration-error");
+						}
+						getActions().loginUser(email, password);
+					})
+					.catch(error => setStore({ authToken: null, authError: error }));
 			}
 		}
 	};
 };
-
 export default getState;
