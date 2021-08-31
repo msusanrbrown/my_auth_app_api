@@ -34,7 +34,7 @@ def register():
         "message": "user created"
     }
 
-    return jsonify(response_body), 200
+    return jsonify(response_body), 204
 
 @api.route('/login', methods=['POST'])
 def login():
